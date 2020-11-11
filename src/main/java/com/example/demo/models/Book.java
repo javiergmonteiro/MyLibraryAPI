@@ -24,9 +24,9 @@ public class Book implements Serializable {
     @Column(length = 100000)
     private String synopsis;
 
-    @OneToMany(targetEntity = Genre.class, cascade = CascadeType.ALL)
+    @ManyToMany(targetEntity = Genre.class, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     List<Genre> genres;
-    @OneToMany(targetEntity = Author.class, cascade = CascadeType.ALL)
+    @ManyToMany(targetEntity = Author.class, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     List<Author> authors;
 
     @Override

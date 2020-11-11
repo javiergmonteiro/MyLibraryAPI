@@ -14,6 +14,8 @@ public class Genre {
     @NotBlank(message = "The name cannot be null")
     @Column(unique = true)
     private String name;
+    @NotBlank(message = "The description cannot be null")
+    private String description;
 
     protected Genre() {}
 
@@ -39,5 +41,13 @@ public class Genre {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

@@ -1,9 +1,11 @@
 package com.example.demo.rest;
 
 import com.example.demo.models.Author;
+import com.example.demo.models.Genre;
 import com.example.demo.repositories.AuthorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,7 @@ import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/v1/author")
@@ -45,8 +48,30 @@ public class AuthorController {
     }
 
     @GetMapping("{id}")
-    public Author getOneAuthor(@PathVariable Integer id){
-        return authorRepository.findById(id);
+    public ResponseEntity<Author> getOneAuthor(@PathVariable("id") long id){
+        Optional<Author> _author = authorRepository.findById(id);
+        if (_author.isPresent()){
+            Author author = _author.get();
+            return new ResponseEntity<>(author, HttpStatus.OK);
+        }
+        else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<Author> updateAuthor(@PathVariable("id") long id, @RequestBody Author author){
+        Optional<Author> authorData = authorRepository.findById(id);
+
+        if (authorData.isPresent()){
+            Author _author = authorData.get();
+            //Update the author
+            _author.setName(author.getName());
+            return new ResponseEntity<>(authorRepository.save(_author), HttpStatus.OK);
+        }
+        else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @DeleteMapping("{id}")
