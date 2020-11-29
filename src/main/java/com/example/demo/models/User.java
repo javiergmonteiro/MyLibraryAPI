@@ -1,9 +1,13 @@
 package com.example.demo.models;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sun.istack.NotNull;
+import net.bytebuddy.implementation.bind.annotation.Default;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -16,11 +20,21 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+    @NotNull
+    @NotBlank
+    @Column(length = 30, unique = true)
     private String username;
-    @JsonIgnore
+    @NotNull
+    @NotBlank
+    @Column
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+    @Column
     private boolean active;
-    private String roles;
+    @Column
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String passwordSalt;
+    private String token;
 
     public String getToken() {
         return token;
@@ -29,8 +43,6 @@ public class User {
     public void setToken(String token) {
         this.token = token;
     }
-
-    private String token;
 
     public int getId() {
         return id;
@@ -48,12 +60,10 @@ public class User {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
-    }
+    public String getPassword(){return this.password;}
 
-    public void setPassword(String password) throws NoSuchAlgorithmException {
-        this.password = SHA256.makeHash(password);
+    public void setPassword(String password){
+        this.password = password;
     }
 
     public boolean isActive() {
@@ -64,21 +74,22 @@ public class User {
         this.active = active;
     }
 
-    public String getRoles() {
-        return roles;
-    }
-
-    public void setRoles(String roles) {
-        this.roles = roles;
-    }
-
-    public boolean checkPassword(String hashedPassword){
+    public boolean checkPassword(String rawPassword) throws NoSuchAlgorithmException {
+        String hashedPassword = SHA256.makeHash(rawPassword, this.passwordSalt.getBytes());
         if (this.password.equals(hashedPassword)){
             return true;
         }
         else{
             return false;
         }
+    }
+
+    public String getPasswordSalt() {
+        return passwordSalt;
+    }
+
+    public void setPasswordSalt(String passwordSalt) {
+        this.passwordSalt = passwordSalt;
     }
 }
 

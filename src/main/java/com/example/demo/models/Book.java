@@ -23,11 +23,22 @@ public class Book implements Serializable {
     @Lob
     @Column(length = 100000)
     private String synopsis;
+    @Column
+    @NotNull
+    private Integer quantity;
 
     @ManyToMany(targetEntity = Genre.class, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     List<Genre> genres;
     @ManyToMany(targetEntity = Author.class, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     List<Author> authors;
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
 
     @Override
     public String toString() {

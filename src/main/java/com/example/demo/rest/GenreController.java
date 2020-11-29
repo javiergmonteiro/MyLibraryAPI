@@ -48,7 +48,7 @@ public class GenreController {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Genre> updateGenre(@PathVariable("id") long id, @RequestBody Genre genre){
+    public ResponseEntity<Genre> updateGenriría (@PathVariable("id") long id, @RequestBody Genre genre){
         Optional<Genre> genreData = genreRepository.findById(id);
 
         if (genreData.isPresent()){

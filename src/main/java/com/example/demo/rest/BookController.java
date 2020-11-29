@@ -95,4 +95,24 @@ public class BookController {
     public void delete(@PathVariable Long id){
         bookRepository.deleteById(id);
     }
+
+    @PostMapping("{id}/sell")
+    public ResponseEntity<Object> sell(@PathVariable Long id){
+        Optional<Book> _book = bookRepository.findById(id);
+        if (_book.isPresent()){
+            Book book = _book.get();
+            if (book.getQuantity() <= 0){
+                return ResponseEntity.notFound().build();
+            }
+            else{
+                book.setQuantity(book.getQuantity()-1);
+                bookRepository.save(book);
+                return ResponseEntity.ok().build();
+            }
+        }
+        else{
+            return ResponseEntity.notFound().build();
+        }
+
+    }
 }

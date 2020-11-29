@@ -2,21 +2,16 @@ package com.example.demo.security;
 
 import com.example.demo.repositories.UserRepository;
 import com.example.demo.models.User;
+import com.example.demo.utils.RandomAlphaNumericString;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class TokenAuthentication {
 
+    @Autowired
     private UserRepository userRepository;
-
-    private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-    private static String randomAlphaNumeric(int count){
-        StringBuilder builder = new StringBuilder();
-        while (count-- != 0){
-            int character = (int)(Math.random()*ALPHA_NUMERIC_STRING.length());
-            builder.append(ALPHA_NUMERIC_STRING.charAt(character));
-        }
-        return builder.toString();
-    }
+    private RandomAlphaNumericString randomAlphaNumeric;
 
     public User getUser(String token) {
         User user = userRepository.findByToken(token);
@@ -24,7 +19,7 @@ public class TokenAuthentication {
     }
 
     public String generateNewUserToken(User user){
-        String token = randomAlphaNumeric(15);
+        String token = randomAlphaNumeric.randomAlphaNumeric(30);
         user.setToken(token);
         return token;
     }
