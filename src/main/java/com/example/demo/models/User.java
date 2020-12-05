@@ -11,10 +11,13 @@ import javax.validation.constraints.NotBlank;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+
 import com.example.demo.security.SHA256;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
+@Table(name = "users")
 public class User {
 
     @Id
@@ -35,6 +38,8 @@ public class User {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String passwordSalt;
     private String token;
+    @OneToMany(targetEntity = Book.class)
+    private List<Book> ownedBooks;
 
     public String getToken() {
         return token;
@@ -90,6 +95,14 @@ public class User {
 
     public void setPasswordSalt(String passwordSalt) {
         this.passwordSalt = passwordSalt;
+    }
+
+    public List<Book> getOwnedBooks() {
+        return ownedBooks;
+    }
+
+    public void setOwnedBooks(List<Book> owndedBooks) {
+        this.ownedBooks = owndedBooks;
     }
 }
 

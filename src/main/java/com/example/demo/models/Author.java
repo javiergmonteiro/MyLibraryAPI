@@ -19,7 +19,7 @@ public class Author implements Serializable {
     @OneToMany(targetEntity = Book.class)
     private List<Book> books;
 
-    private Author(){}
+    public Author(){}
 
     public Author(String name){
         this.name = name;

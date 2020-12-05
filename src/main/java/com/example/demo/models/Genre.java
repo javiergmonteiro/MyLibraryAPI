@@ -17,7 +17,7 @@ public class Genre {
     @NotBlank(message = "The description cannot be null")
     private String description;
 
-    protected Genre() {}
+    public Genre() {}
 
     @Override
     public String toString() {
