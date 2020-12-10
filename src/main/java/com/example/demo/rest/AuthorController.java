@@ -1,8 +1,8 @@
 package com.example.demo.rest;
 
 import com.example.demo.models.Author;
-import com.example.demo.models.Genre;
 import com.example.demo.repositories.AuthorRepository;
+import com.example.demo.services.AuthorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +36,8 @@ public class AuthorController {
 
     @Autowired
     private AuthorRepository authorRepository;
+    @Autowired
+    private AuthorService authorService;
 
     @PostMapping("")
     public void save(@Valid @RequestBody Author author){
@@ -61,17 +63,8 @@ public class AuthorController {
 
     @PutMapping("{id}")
     public ResponseEntity<Author> updateAuthor(@PathVariable("id") long id, @RequestBody Author author){
-        Optional<Author> authorData = authorRepository.findById(id);
-
-        if (authorData.isPresent()){
-            Author _author = authorData.get();
-            //Update the author
-            _author.setName(author.getName());
-            return new ResponseEntity<>(authorRepository.save(_author), HttpStatus.OK);
-        }
-        else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        authorService.update(id, author);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("{id}")

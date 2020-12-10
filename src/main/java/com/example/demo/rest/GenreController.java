@@ -2,6 +2,7 @@ package com.example.demo.rest;
 
 import com.example.demo.models.Genre;
 import com.example.demo.repositories.GenreRepository;
+import com.example.demo.services.GenreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,8 @@ public class GenreController {
 
     @Autowired
     GenreRepository genreRepository;
+    @Autowired
+    GenreService genreService;
 
     @PostMapping("")
     public ResponseEntity<Genre> create(@Valid @RequestBody Genre genre) throws URISyntaxException {
@@ -49,18 +52,8 @@ public class GenreController {
 
     @PutMapping("{id}")
     public ResponseEntity<Genre> updateGenriría (@PathVariable("id") long id, @RequestBody Genre genre){
-        Optional<Genre> genreData = genreRepository.findById(id);
-
-        if (genreData.isPresent()){
-            Genre _genre = genreData.get();
-            //Update the genre
-            _genre.setName(genre.getName());
-            _genre.setDescription(genre.getDescription());
-            return new ResponseEntity<>(genreRepository.save(_genre), HttpStatus.OK);
-        }
-        else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        genreService.update(id, genre);
+        return ResponseEntity.ok().build();
     }
     @DeleteMapping("{id}")
     public void delete(@PathVariable Long id){

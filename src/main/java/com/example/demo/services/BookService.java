@@ -1,5 +1,6 @@
 package com.example.demo.services;
 
+import com.example.demo.Exceptions.OutOfStockException;
 import com.example.demo.models.Author;
 import com.example.demo.models.Book;
 import com.example.demo.models.Genre;
@@ -11,18 +12,12 @@ import com.example.demo.repositories.UserRepository;
 import com.example.demo.services.BookAPIService.GoogleBookApiService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-
-class OutOfStockException extends Exception{
-    public OutOfStockException(String errorMessage){
-        super(errorMessage);
-    }
-}
+import java.util.Optional;
 
 @Service
 public class BookService {
@@ -39,41 +34,40 @@ public class BookService {
     GoogleBookApiService googleBookApiService;
 
     public void sell(Book book, User user) throws OutOfStockException {
-        if(book.getQuantity() > 0){
+        if (book.getQuantity() > 0) {
             user.getOwnedBooks().add(book);
             userRepository.save(user);
-            book.setQuantity(book.getQuantity()-1);
+            book.setQuantity(book.getQuantity() - 1);
             bookRepository.save(book);
-        }
-        else{
+        } else {
             throw new OutOfStockException("The book requested is out of stock");
         }
     }
 
-    public Book save(Book book){
+    public Book save(Book book) {
         List<Author> unverified_authors = book.getAuthors();
         List<Genre> unverified_genres = book.getGenres();
 
         List<Author> verified_authors = new ArrayList<>();
         List<Genre> verified_genres = new ArrayList<>();
 
-        for (int i=0;i < unverified_authors.size(); i++){
+        for (int i = 0; i < unverified_authors.size(); i++) {
             //System.out.println(unverified_authors.size());
             //System.out.println(i);
             Author unverified_author = unverified_authors.get(i);
             Author author = authorRepository.findByName(unverified_author.getName());
-            if (author == null){
+            if (author == null) {
                 author = authorRepository.save(unverified_author);
             }
             verified_authors.add(author);
         }
 
-        for (int i=0;i < unverified_genres.size(); i++){
+        for (int i = 0; i < unverified_genres.size(); i++) {
             //System.out.println(unverified_authors.size());
             //System.out.println(i);
             Genre unverified_genre = unverified_genres.get(i);
             Genre genre = genreRepository.findByName(unverified_genre.getName());
-            if (genre == null){
+            if (genre == null) {
                 genre = genreRepository.save(unverified_genre);
             }
             verified_genres.add(genre);
@@ -85,57 +79,85 @@ public class BookService {
         return book;
     }
 
-    public BookSearchResult searchBy(String title, String genre){
+    public BookSearchResult searchBy(String title, String genre) {
         BookSearchResult bookSearchResult = new BookSearchResult();
         String apiQuery;
-        if(title != null && genre!= null){
-            apiQuery= title+"+"+genre;
+        if (title != null && genre != null) {
+            apiQuery = title + "+" + genre;
             List<Book> books = new ArrayList<>();
-            for (Book book : bookRepository.findByTitleContaining(title)){
-                if (!books.contains(book) && book != null){
+            for (Book book : bookRepository.findByTitleContaining(title)) {
+                if (!books.contains(book) && book != null) {
                     books.add(book);
                 }
             }
-            for (Book book : bookRepository.findByGenresNameContaining(genre)){
-                if (!books.contains(book) && book != null){
+            for (Book book : bookRepository.findByGenresNameContaining(genre)) {
+                if (!books.contains(book) && book != null) {
                     books.add(book);
                 }
             }
-            if (books != null && !books.isEmpty()){
+            if (books != null && !books.isEmpty()) {
                 bookSearchResult.setResults(books);
             }
-        }
-        else if(title != null){
+        } else if (title != null) {
             apiQuery = title;
             List<Book> books = bookRepository.findByTitleContaining(title);
-            if (books != null){
+            if (books != null) {
                 System.out.println(books);
                 bookSearchResult.setResults(books);
             }
-        }
-        else if(genre != null){
+        } else if (genre != null) {
             apiQuery = genre;
             List<Book> books = bookRepository.findByGenresNameContaining(genre);
-            if (books != null){
+            if (books != null) {
                 bookSearchResult.setResults(books);
             }
-        }
-        else {
+        } else {
             apiQuery = null;
             List<Book> books = (List<Book>) bookRepository.findAll();
-            if (books != null){
+            if (books != null) {
                 bookSearchResult.setResults(books);
             }
         }
-        try{
+        try {
             List<Book> api_books = googleBookApiService.fetchAPIBooks(apiQuery);
             bookSearchResult.setSimilar_books(api_books);
-        }catch (URISyntaxException e){
+        } catch (URISyntaxException e) {
             e.printStackTrace();
-        }catch (JsonProcessingException e){
+        } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
         return bookSearchResult;
     }
+
+    public void updateBook(Long id, Book book) {
+        Optional<Book> bookData = bookRepository.findById(id);
+        List<Genre> verifiedGenres = new ArrayList<>();
+        List<Author> verifiedAuthors = new ArrayList<>();
+        if (bookData.isPresent()) {
+            Book _book = bookData.get();
+            List<Author> authors = _book.getAuthors();
+            List<Genre> genres = _book.getGenres();
+            for (Author _author : authors){
+                Optional<Author> author = authorRepository.findById(_author.getId());
+                if (author.isPresent()){
+                    verifiedAuthors.add(author.get());
+                }
+            }
+            for (Genre _genre : genres){
+                Optional<Genre> genre = genreRepository.findById(_genre.getId());
+                if (genre.isPresent()){
+                    verifiedGenres.add(genre.get());
+                }
+            }
+            //Update the book
+            _book.setTitle(book.getTitle());
+            _book.setSynopsis(book.getSynopsis());
+            _book.setIsbn(book.getIsbn());
+            _book.setAuthors(book.getAuthors());
+            _book.setGenres(book.getGenres());
+            bookRepository.save(_book);
+        }
+    }
 }
+
 
